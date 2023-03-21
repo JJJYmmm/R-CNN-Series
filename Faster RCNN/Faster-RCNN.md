@@ -8,41 +8,42 @@
 
 ## 算法流程
 
-![image-20230308091659327](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230308091659327.png)
+![image](https://user-images.githubusercontent.com/92386084/226544130-d2ea7aab-0af0-45d7-a5c9-de8635cc245d.png)
 
-![image-20230308091742426](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230308091742426.png)
+![image](https://user-images.githubusercontent.com/92386084/226544202-6176e1ed-cc49-4389-be2e-4283bac3728c.png)
+
 
 ## RPN网络结构
 
 ### 正向传播
 
-![image-20230308091838188](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230308091838188.png)
+![image](https://user-images.githubusercontent.com/92386084/226544252-8171bb93-26f4-4c6a-abf6-00eb20a08ea0.png)
 
 > 对于特征图上的每个3x3的滑动窗口(**实际实现就是用conv3x3 p1 s1**)，首先计算窗口中心点在原图上的位置，并计算出k个anchor box
 
 ​	对于anchor的选择，共有**三种比例，三种尺度**，即**每个位置都有9个anchor**
 
-<img src="C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230308092338534.png" alt="image-20230308092338534" style="zoom: 50%;" />
+![image](https://user-images.githubusercontent.com/92386084/226544288-eae2f016-548d-4f63-a8a4-acb23ca42008.png)
 
 ### 感受野
 
 ​	对于特征图上的感受野，骨干网络为**ZFNet时，感受野为171**；骨干网络为**VGG16时，感受野为228**(具体计算如下)
 
-<img src="C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230308092633528.png" alt="image-20230308092633528" style="zoom: 33%;" />
+![image](https://user-images.githubusercontent.com/92386084/226544301-77d7431a-7e65-4ad0-9a9b-4adbb0f76e5b.png)
 
 > 有个问题是，无论是VGG/ZF骨干网络，一个位置的感受野最多也就是228x228，那为什么anchor box的尺寸可以设置到256x256甚至512x512？ 在论文中解释是说，**通过物体的局部来预测物体是有可能的，实际上这么设置表现也确实有所提升**（
 
-![image-20230308092958530](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230308092958530.png)
+![image](https://user-images.githubusercontent.com/92386084/226544330-35be2081-ec08-4b2f-8ad3-899199c7e392.png)
 
 ### anchor->proposal
 
-<img src="C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230308093042856.png" alt="image-20230308093042856" style="zoom:50%;" />
+![image](https://user-images.githubusercontent.com/92386084/226544358-d08a5bf3-f9d5-4fe6-9b41-341059d6b2a2.png)
 
 ## 正负样本选择
 
 ​	训练时，每个mini-batch，即每张图片**随机选择256个anchor，这些anchor中正负样本比例大约是1:1**。如果正样本数目不足128，那就用负样本补足到256.
 
-![image-20230308093402534](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230308093402534.png)
+![image](https://user-images.githubusercontent.com/92386084/226544444-6431bcbb-a5cf-46b0-a944-3f819badcbec.png)
 
 ​	正负样本定义如下：
 
@@ -56,37 +57,35 @@
 
 ​	RPN网络的损失分为两部分，分类损失和边界框损失。**分类主要是衡量预测框中是否含有物体(类似于YOLO系列中的objectness)，边界框损失就是简单的回归损失。**
 
-<img src="C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230308093901988.png" alt="image-20230308093901988" style="zoom:50%;" />
+![image](https://user-images.githubusercontent.com/92386084/226544464-311210f9-a46b-4031-8970-b5fa1879f194.png)
 
-<img src="C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230308093935964.png" alt="image-20230308093935964" style="zoom:50%;" />
+![image](https://user-images.githubusercontent.com/92386084/226544484-69992b25-74c1-4ac5-b2f8-74715983deff.png)
 
 ​	分类损失有两种实现：
 
 ​	如果每个anchor只有一个预测值，那么就使用**BCE二元交叉熵损失**；
-
-<img src="C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230308094354826.png" alt="image-20230308094354826" style="zoom:50%;" />
+![image](https://user-images.githubusercontent.com/92386084/226544525-7a141de7-2e78-4f9d-a274-a8e360bff03d.png)
 
 ​	如果每个anchor有两个预测值，那么就使用**Softmax Cross Entropy**。
 
-<img src="C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230308094431386.png" alt="image-20230308094431386" style="zoom:50%;" />
+![image](https://user-images.githubusercontent.com/92386084/226544545-1f511446-624e-4d69-9972-d5d50ce35504.png)
 
 ​	边界框回归损失和Fast RCNN一样，都是用**SmoothL1 Loss**.**标注值t*的计算参考RCNN中的实现。**
 
-<img src="C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230308094537614.png" alt="image-20230308094537614" style="zoom:50%;" />
+![image](https://user-images.githubusercontent.com/92386084/226544564-e8d39b8e-c277-4fec-96d1-1c58b0c79ef0.png)
 
 ### Detect Loss
 
 ​	检测网络的损失和Faster-RCNN网络的损失一摸一样。这里不再赘述。
 
-![image-20230307213352907](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230307213352907.png)
+![image](https://user-images.githubusercontent.com/92386084/226544589-b6cd4ae7-24be-4098-8aee-ea8cfc0cbeef.png)
 
 ## 网络训练
 
-![image-20230308094828414](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230308094828414.png)
+![image](https://user-images.githubusercontent.com/92386084/226544620-496a46b4-37aa-4be0-96b0-2e27c07b4e5f.png)
 
 > 现在可以直接采用RPN loss+Fast R-CNN Loss联合训练网络
-
-![image-20230308095010636](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230308095010636.png)
+![image](https://user-images.githubusercontent.com/92386084/226544646-79371fb9-9529-450a-bd5f-26ef8060feba.png)
 
 ### 自己的一点理解
 

@@ -18,23 +18,21 @@
 - 特征送入每一类的**SVM分类器**，判别种类
 - 使用**回归器**对候选框进行微调
 
-![image-20230307094945946](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230307094945946.png)
+![image](https://user-images.githubusercontent.com/92386084/226543702-80b1a2a0-7b03-417e-92b9-56c9597c8468.png)
 
 ### 候选区域生成
 
 ​	使用Selective Search算法。算法大致思路是通过聚类的方法在图像上初步分割，找到
 
 颜色/纹理/大小/相似度比较相似的区域，再根据这些区域进行加权合并，最后(希望)得到一些包括了GT box的候选框。
-
-![image-20230307095455683](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230307095455683.png)
+![image](https://user-images.githubusercontent.com/92386084/226543716-c5931c9e-8fc2-41f7-a4f5-c42e5479a5ab.png)
 
 ### AlexNet 提取特征
 
 ​	对于每个候选框，将框中的内容提取出来，并**缩放至227x227的大小**，送入**AlexNet**中提取特征，产生**4096维的向量**。
 
 > 这里之所以一定要缩放到固定大小，是因为CNN里面有全连接层
-
-![image-20230307100723121](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230307100723121.png)
+![image](https://user-images.githubusercontent.com/92386084/226543739-73cd1a1a-58f0-4838-89bc-5517df86b14f.png)
 
 ### SVM分类
 
@@ -50,25 +48,22 @@
 
 ​	预测时通过**四个函数dx/dy/dw/dh来拟合GT Box**，前两个公式拟合GTBox的中心位置，后两个位置拟合宽高的指数偏移。
 
-![image-20230307101918729](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230307101918729.png)
+![image](https://user-images.githubusercontent.com/92386084/226543763-a62f1ee1-0040-4e25-acac-145f27e4eaee.png)
 
 ​	训练时的**标签值**可以由以下公式获得。也就是上面四个公式的逆变换。
-
-![image-20230307102128616](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230307102128616.png)
-
+![image](https://user-images.githubusercontent.com/92386084/226543789-70f3c25a-6d64-4f63-a427-e701359bde22.png)
 ### 网络框架
-
-![image-20230307101120843](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230307101120843.png)
+![image](https://user-images.githubusercontent.com/92386084/226543813-3ebe8553-de28-4c31-a87e-b629fcc17d7e.png)
 
 ## 卷积可视化
 
 ​	论文里提到一个卷积可视化的概念。具体来说，**选择在神经网络的某一个神经元，将他作为一个独立的对象检测器使用**。对于该神经元，输入10 million的region proposal，**找到这些区域中使该神经元值最大的那些候选框**。通过输出这些图像，可以发现每个神经元有自己偏好的识别模式.比如上半身/狗子/红花等等。
 
-![image-20230307102830346](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230307102830346.png)
+![image](https://user-images.githubusercontent.com/92386084/226543828-fe876e22-302d-4487-b290-a2d8dee1ca28.png)
 
 ​	论文中也提到这些神经元选取的是POOL5中的神经元。POOL5在网络尾部，所以偏好的识别模式也是比较抽象的(上文提到的上半身等等)。同时论文中也说到**在一个通道内，坐标y/x只影响感受野，不影响识别模式**。(很好理解，卷积核是不变的)
 
-![image-20230307102533964](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230307102533964.png)
+![image](https://user-images.githubusercontent.com/92386084/226543851-84c94b62-320e-4d30-81bd-acabe4e57be4.png)
 
 ## 消融实验
 

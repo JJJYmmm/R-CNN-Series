@@ -21,7 +21,8 @@
 - 全连接层的输出有两个，计算**class得分**和**bounding box回归**。前者是**sotfmax的21类分类器（假设有20个类别+背景类）**，输出属于每一类的概率（所有建议框的输出构成得分矩阵）；**后者是输出一个 20×4 的矩阵，4表示(x, y, w, h)**，20表示20个类，这里是对20个类分别计算了框的位置和大小
 - 对输出的**得分矩阵使用非极大抑制方法选出少数框**，对每一个框**选择概率最大的类作为标注的类**，根据网络结构的第二个输出，**选择对应类下的位置和大小对图像进行标注**
 
-![image-20230307213534355](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230307213534355.png)
+![image](https://user-images.githubusercontent.com/92386084/226543437-5156264d-770e-499c-8f1a-bf53b4f346f3.png)
+
 
 ## 网络结构
 
@@ -44,7 +45,7 @@
 - 特征框继续向下计算，进入两个并行层计算损失函数
 - 反向传播更新参数（关于ROI池化的反向传播细节可以参考[这篇博客](https://link.zhihu.com/?target=https%3A//blog.csdn.net/WoPawn/article/details/52463853)）
 
-![image-20230307213611296](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230307213611296.png)
+![image](https://user-images.githubusercontent.com/92386084/226543479-71ea9236-e16f-418a-82c2-296b960a3b14.png)
 
 ## 损失函数
 
@@ -53,7 +54,7 @@
 - 对类别输出按照softmax正常计算损失(交叉熵损失)
 - 对框的位置的损失方面，**标注为背景类的建议框(负样本)不增加损失**（体现在下面公式中的 **[u>1] 艾弗森括号**）。对于**标注为物体类别的建议框(正样本)**来说，先计算ground truth的四个标注参数，再和网络的预测值来计算loss(采用**smoothL1 loss**)
 
-![image-20230307213352907](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230307213352907.png)
+![image](https://user-images.githubusercontent.com/92386084/226543503-ae6e1c06-2859-4e17-9115-44f03bbce15e.png)
 
 ## 论文中的其他
 
@@ -62,4 +63,4 @@
 - 在fine-tuning基础上更新哪些层的参数实验
 - SVM V.S. softmax，输入多种规格的图片，更多训练数据等等
 
-![image-20230307213740234](C:\Users\Axuanz\AppData\Roaming\Typora\typora-user-images\image-20230307213740234.png)
+![image](https://user-images.githubusercontent.com/92386084/226543525-932f5660-2424-46b2-8623-0f756e635856.png)
